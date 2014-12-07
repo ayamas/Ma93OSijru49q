@@ -458,7 +458,7 @@
 	 *	Do NOT change this salt once users have started registering accounts as their passwords will not work without the original salt.
 	 *	CHANGE THE DEFAULT STATIC SALT SET BELOW TO YOUR OWN RANDOM SET OF CHARACTERS.
 	*/
-	$config['security']['static_salt'] = 'c;N0]M<LtVX5 ZH:|=$lFC?3IVO~8TWe@*[Wzb6ILeSeAOeQIEjz?~B5v+X+Vzf|';
+	$config['security']['static_salt'] = '';
 	
 	/**
 	 * Set whether a salt is stored in the database and then used for password and hash token generation.
@@ -532,8 +532,8 @@
 	 * Set your unique reCAPTCHA api keys.
 	 * !IMPORTANT: Obtain YOUR OWN reCAPTCHA keys from http://www.google.com/recaptcha.
 	*/
-	$config['security']['recaptcha_public_key']	= '6LcVgv0SAAAAACASBJEydO3YoJmhkZj4vCNm0Kml';
-	$config['security']['recaptcha_private_key'] = '6LcVgv0SAAAAAIEj4DbtNtUOOx-9YnkNmF6c9DOk'; 
+	$config['security']['recaptcha_public_key'] = '';
+	$config['security']['recaptcha_private_key'] = ''; 
 
 	/**
 	 * Set the theme of the reCAPTCHA. For custom theming, see https://developers.google.com/recaptcha/docs/customization
@@ -590,7 +590,7 @@
 	 * Set the id of the default group that new users will be added to unless otherwise specified.
 	 * @param: int
 	*/
-	$config['settings']['default_group_id'] = 1;
+	$config['settings']['default_group_id'] = 3;
 
     /**
      * Set whether user privileges should be determined by individual privileges assigned per user, or via privileges assigned to a users user group.
