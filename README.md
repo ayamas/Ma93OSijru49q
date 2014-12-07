@@ -1,2 +1,5 @@
-Ma93OSijru49q
+Generic Codeigniter Site
 =============
+
+Installation :
+
