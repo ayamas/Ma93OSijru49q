@@ -86,12 +86,6 @@ CREATE TABLE IF NOT EXISTS `user_accounts` (
   `uacc_date_added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=8 ;
 
---
--- Dumping data for table `user_accounts`
---
-
-INSERT INTO `user_accounts` (`uacc_id`, `uacc_group_fk`, `uacc_email`, `uacc_username`, `uacc_password`, `uacc_ip_address`, `uacc_salt`, `uacc_activation_token`, `uacc_forgotten_password_token`, `uacc_forgotten_password_expire`, `uacc_update_email_token`, `uacc_update_email`, `uacc_active`, `uacc_suspend`, `uacc_fail_login_attempts`, `uacc_fail_login_ip_address`, `uacc_date_fail_login_ban`, `uacc_date_last_login`, `uacc_date_added`) VALUES
-(1, 3, 'mamama@ammama.com', 'magister', '$2a$08$CiCF/UpA4migdWnBwuX2S.5W6qT343nOMPd/K3Fx3FM6d7zIJ3GTy', '::1', 'rgtCGbqwBnGDgdw3rSqCfr', '', '', '0000-00-00 00:00:00', '', '', 1, 0, 0, '', '0000-00-00 00:00:00', '2014-12-07 08:24:08', '2014-11-30 15:12:09');
 
 -- --------------------------------------------------------
 
