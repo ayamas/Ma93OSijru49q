@@ -1,4 +1,5 @@
 # Generic Codeigniter Site
+This site is using Codeigniter 2.2.0. Since Ellislab is handing over the development to another party, most likely Codeigniter 3.0 will be in stable version in near time. We will update to current version of Codeigniter once it is in stable version.
 
 ## Installation
 ##### /application/config/config.php<br><br>
@@ -21,7 +22,6 @@ Update the 'cookie_prefix' config setting to a value of your choice. This is to 
 ```sh
 $config['cookie_prefix'] = "your_prefix_";
 ```
-
 ##### /application/config/database.php<br><br>
 Update the database setting
 ```sh
@@ -52,124 +52,122 @@ RewriteBase /your_codeigniter_directory/
 ##### SQL Dump<br><br>
 Import Generic.Site.sql to your database.
 
+## Usage
+##### Registration<br><br>
+Register new user. There is no default user since the each installation require a different static salt key. THIS USER WILL BE ADMIN to your site. Please use valid credential as the account has to be validated first before you can even login.
 
+IMPORTANT!
 
-  - Type some Markdown on the left
-  - See HTML in the right
-  - Magic
+After successfully create your first user, browse to
+```sh
+/application/config/flexi_auth.php
+```
+and change '3' to '1'. This is to prevent next user to have an admin authority.
+```sh
+$config['settings']['default_group_id'] = 3;
+CHANGE TO
+$config['settings']['default_group_id'] = 1;
+```
 
-Markdown is a lightweight markup language based on the formatting conventions that people naturally use in email.  As [John Gruber] writes on the [Markdown site] [1]:
+##### Layout Template<br><br>
+Custom Layout Libraries
+```sh
+/application/libraries/Layouts.php
+```
+This will be the main template for the whole application. The default consists of 3 seperate layout (public, member and administrator). If you wish to add a new template, insert the new layout function just like below
+```sh
+public function newLayoutName($view_name, $params = array(), $layout = 'new_layout') {
+        .....
+}
+```
+The default location for view function is located at
+```sh
+/application/views/layouts
+```
 
-> The overriding design goal for Markdown's
-> formatting syntax is to make it as readable
-> as possible. The idea is that a
-> Markdown-formatted document should be
-> publishable as-is, as plain text, without
-> looking like it's been marked up with tags
-> or formatting instructions.
+##### How to Use Template<br>
+##### Controller<br><br>
+```sh
+// Set the page title
+$this->layouts->set_title('Welcome');
+        
+// Include any css that needed. This is chained method, so just add all file like below
+$this->layouts->add_css('assets/css/bootstrap.css')
+              ->add_css('assets/css/sb-admin-2.css');
+        
+// Include any js that needed
+$this->layouts->add_js('assets/js/jquery.js')
+              ->add_js('assets/js/bootstrap.min.js');
 
-This text you see here is *actually* written in Markdown! To get a feel for Markdown's syntax, type some text into the left window and watch the results in the right.
+$this->layouts->viewPublic('public/login_view', $this->data);
+```
+CSS and JS are seperated because it is better to load the js file at the bottom of the page rather than on the top. For each function, user can define which CSS and JS file that get loaded. This modular loading will improve site performance rather than loading all the assest files on every page.
+
+##### View<br><br>
+```sh
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Generic Template<?php echo $title_for_layout ?></title> 
+
+        <?php echo $this->layouts->print_css(); ?>
+        <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <?php echo $content_for_layout; ?> 
+
+        <?php echo $this->layouts->print_js(); ?> 
+
+    </body>
+
+</html>
+```
+The view will be called inside 
+```sh
+<?php echo $content_for_layout; ?> 
+```
+
 
 ### Version
-3.0.2
+1.0.0
 
 ### Tech
 
-Dillinger uses a number of open source projects to work properly:
+This generic site uses a number of open source projects to work properly:
 
-* [AngularJS] - HTML enhanced for web apps!
-* [Ace Editor] - awesome web-based text editor
-* [Marked] - a super fast port of Markdown to JavaScript
-* [Twitter Bootstrap] - great UI boilerplate for modern web apps
-* [node.js] - evented I/O for the backend
-* [Express] - fast node.js network app framework [@tjholowaychuk]
-* [Gulp] - the streaming build system
-* [keymaster.js] - awesome keyboard handler lib by [@thomasfuchs]
+* [CodeIgniter] - A Fully Baked PHP Framework!
+* [flexi auth] - awesome user authentication library
+* [Layout Manager] - Tutorial on how to create Layout Manager
+* [SB Admin 2 template] - Strip down free responsive bootstrap admin template
 * [jQuery] - duh
 
-### Installation
-
-You need Gulp installed globally:
-
-```sh
-$ npm i -g gulp
-```
-
-```sh
-$ git clone [git-repo-url] dillinger
-$ cd dillinger
-$ npm i -d
-$ mkdir -p public/files/{md,html,pdf}
-$ gulp build --prod
-$ NODE_ENV=production node app
-```
-
-### Plugins
-
-Dillinger is currently extended with the following plugins
-
-* Dropbox
-* Github
-* Google Drive
-* OneDrive
-
-Readmes, how to use them in your own application can be found here:
-
-* plugins/dropbox/README.md
-* plugins/github/README.md
-* plugins/googledrive/README.md
-* plugins/onedrive/README.md
-
-### Development
-
-Want to contribute? Great!
-
-Dillinger uses Gulp + Webpack for fast developing.
-Make a change in your file and instantanously see your updates!
-
-Open your favorite Terminal and run these commands.
-
-First Tab:
-```sh
-$ node app
-```
-
-Second Tab:
-```sh
-$ gulp watch
-```
-
-(optional) Third:
-```sh
-$ karma start
-```
 
 ### Todo's
 
- - Write Tests
- - Rethink Github Save
- - Add Code Comments
- - Add Night Mode
-
-License
-----
-
-MIT
+ - Nothing yet
 
 
 **Free Software, Hell Yeah!**
 
-[john gruber]:http://daringfireball.net/
-[@thomasfuchs]:http://twitter.com/thomasfuchs
-[1]:http://daringfireball.net/projects/markdown/
-[marked]:https://github.com/chjj/marked
-[Ace Editor]:http://ace.ajax.org
-[node.js]:http://nodejs.org
-[Twitter Bootstrap]:http://twitter.github.com/bootstrap/
-[keymaster.js]:https://github.com/madrobby/keymaster
+[CodeIgniter]:http://www.codeigniter.com/
+[flexi auth]:http://haseydesign.com/flexi-auth/
+[Layout Manager]:http://code.tutsplus.com/tutorials/how-to-create-a-layout-manager-with-codeigniter--net-15533
+[SB Admin 2 template]:http://startbootstrap.com/template-overviews/sb-admin-2/
 [jQuery]:http://jquery.com
-[@tjholowaychuk]:http://twitter.com/tjholowaychuk
-[express]:http://expressjs.com
-[AngularJS]:http://angularjs.org
-[Gulp]:http://gulpjs.com
 [Get your own API keys]:http://www.google.com/recaptcha
