@@ -1,0 +1,287 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Member extends CI_Controller {
+
+    function __construct() {
+        parent::__construct();
+
+        // To load the CI benchmark and memory usage profiler - set 1==1.
+        if (1 == 2) {
+            $sections = array(
+                'benchmarks' => TRUE, 'memory_usage' => TRUE,
+                'config' => TRUE, 'controller_info' => TRUE, 'get' => TRUE, 'post' => TRUE, 'queries' => TRUE,
+                'uri_string' => TRUE, 'http_headers' => TRUE, 'session_data' => TRUE
+            );
+            $this->output->set_profiler_sections($sections);
+            $this->output->enable_profiler(TRUE);
+        }
+
+        // Load required CI libraries and helpers.
+        $this->load->database();
+        $this->load->library('session');
+        $this->load->helper('url');
+        $this->load->helper('form');
+
+        // IMPORTANT! This global must be defined BEFORE the flexi auth library is loaded! 
+        // It is used as a global that is accessible via both models and both libraries, without it, flexi auth will not work.
+        $this->auth = new stdClass;
+
+        // Load 'standard' flexi auth library by default.
+        $this->load->library('flexi_auth');
+        $this->load->library('Layouts');
+
+        // Check user is logged in via either password or 'Remember me'.
+        // Note: Allow access to logged out users that are attempting to validate a change of their email address via the 'update_email' page/method.
+        if (!$this->flexi_auth->is_logged_in() && $this->uri->segment(2) != 'update_email') {
+            // Set a custom error message.
+            $this->flexi_auth->set_error_message('You must login to access this area.', TRUE);
+            $this->session->set_flashdata('message', $this->flexi_auth->get_messages());
+            redirect('auth');
+        }
+
+        // Note: This is only included to create base urls for purposes of this demo only and are not necessarily considered as 'Best practice'.
+        $this->load->vars('base_url', 'http://localhost/flexi_auth/');
+        $this->load->vars('includes_dir', 'http://localhost/flexi_auth/includes/');
+        $this->load->vars('current_url', $this->uri->uri_to_assoc(1));
+
+        // Define a global variable to store data that is then used by the end view page.
+        $this->data = null;
+    }
+
+    ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
+    // Dashboard
+    ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
+
+    /**
+     * index
+     * Forwards to the public dashboard.
+     */
+    function index() {
+        redirect('member/dashboard');
+    }
+
+    /**
+     * dashboard (Public)
+     * The public account dashboard page that acts as the landing page for newly logged in public users.
+     * The dashboard provides links to some examples of the features available from the flexi auth library.  
+     */
+    function dashboard() {
+        // Get any status message that may have been set.
+        $this->data['message'] = $this->session->flashdata('message');
+        
+        // Set the page title
+        $this->layouts->set_title('Member Dashboard');
+        
+        // Include any css that needed. This is chained method, so just add all file like below
+        $this->layouts->add_css('assets/css/bootstrap.css')
+                      ->add_css('assets/css/plugins/metisMenu/metisMenu.min.css')
+                      ->add_css('assets/css/sb-admin-2.css')
+                      ->add_css('assets/font-awesome/css/font-awesome.min.css');
+        
+        // Include any js that needed
+        $this->layouts->add_js('assets/js/jquery.js')
+                      ->add_js('assets/js/bootstrap.min.js')
+                      ->add_js('assets/js/plugins/metisMenu/metisMenu.min.js')
+                      ->add_js('assets/js/sb-admin-2.js');
+                
+        
+        $this->layouts->viewMember('member/dashboard_view', $this->data);
+    }
+
+    ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
+    // Public Account Management
+    ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
+
+    /**
+     * update_account
+     * Manage and update the account details of a logged in public user.
+     */
+    function update_account() {
+        // If 'Update Account' form has been submitted, update the user account details.
+        if ($this->input->post('update_account')) {
+            $this->load->model('auth_model');
+            $this->auth_model->update_account();
+        }
+
+        // Get users current data.
+        // This example does so via 'get_user_by_identity()', however, 'get_users()' using any other unqiue identifying column and value could also be used.
+        $this->data['user'] = $this->flexi_auth->get_user_by_identity_row_array();
+
+        // Set any returned status/error messages.
+        $this->data['message'] = (!isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];
+        
+        // Set the page title
+        $this->layouts->set_title('Member Dashboard');
+        
+        // Include any css that needed. This is chained method, so just add all file like below
+        $this->layouts->add_css('assets/css/bootstrap.css')
+                      ->add_css('assets/css/plugins/metisMenu/metisMenu.min.css')
+                      ->add_css('assets/css/sb-admin-2.css')
+                      ->add_css('assets/font-awesome/css/font-awesome.min.css');
+        
+        // Include any js that needed
+        $this->layouts->add_js('assets/js/jquery.js')
+                      ->add_js('assets/js/bootstrap.min.js')
+                      ->add_js('assets/js/plugins/metisMenu/metisMenu.min.js')
+                      ->add_js('assets/js/sb-admin-2.js');
+                
+        
+        $this->layouts->viewMember('member/account_update_view', $this->data);
+    }
+
+    /**
+     * change_password
+     * Manually update the logged in public users password, by submitting the current and new password.
+     * This example requires that the length of the password must be between 8 and 20 characters, containing only alpha-numerics plus the following 
+     * characters: periods (.), commas (,), hyphens (-), underscores (_) and spaces ( ). These customisable validation settings are defined via the auth config file.
+     */
+    function change_password() {
+        // If 'Update Password' form has been submitted, validate and then update the users password.
+        if ($this->input->post('change_password')) {
+            $this->load->model('auth_model');
+            $this->auth_model->change_password();
+        }
+
+        // Set any returned status/error messages.
+        $this->data['message'] = (!isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];
+        
+        // Set the page title
+        $this->layouts->set_title('Change Password');
+        
+        // Include any css that needed. This is chained method, so just add all file like below
+        $this->layouts->add_css('assets/css/bootstrap.css')
+                      ->add_css('assets/css/plugins/metisMenu/metisMenu.min.css')
+                      ->add_css('assets/css/sb-admin-2.css')
+                      ->add_css('assets/font-awesome/css/font-awesome.min.css');
+        
+        // Include any js that needed
+        $this->layouts->add_js('assets/js/jquery.js')
+                      ->add_js('assets/js/bootstrap.min.js')
+                      ->add_js('assets/js/plugins/metisMenu/metisMenu.min.js')
+                      ->add_js('assets/js/sb-admin-2.js');
+                
+        
+        $this->layouts->viewMember('member/password_update_view', $this->data);
+    }
+
+    /**
+     * update_email
+     * Update the current logged in users email address via sending a verification email.
+     * This example with send a verification email to the users newly entered email address, once they click a link within that email, their account will be
+     * updated with the new email address. 
+     * The purpose of verification via email ensures that a user enters their correct email address. If they were to unknowingly mispell the address, the next time
+     * they tried to login to site, their email address would no longer be recognised, and they would then be completely locked out of their account.
+     */
+    function update_email($user_id = FALSE, $token = FALSE) {
+        $this->load->model('auth_model');
+
+        // If 'Update Email' form has been submitted, send a verification email to the submitted email address.
+        if ($this->input->post('update_email')) {
+            $this->auth_model->send_new_email_activation();
+        }
+        // Else if page has been accessed via a link set in the verification email, then validate the activation token and update the email address.
+        else if (is_numeric($user_id) && strlen($token) == 40) { // 40 characters = Email Activation Token length.
+            $this->auth_model->verify_updated_email($user_id, $token);
+        }
+
+        // In this demo, the 'update_email' page is the only page in this controller that can be accessed without needing to be logged in.
+        // This is because, some users may validate their change of email address at a later time, or from a different device that they are not logged in on.
+        // Therefore, check that the user is logged in before granting them access to the 'update_email' page.
+        if ($this->flexi_auth->is_logged_in()) {
+            // Set any returned status/error messages.
+            $this->data['message'] = (!isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];
+
+            $this->load->view('demo/public_examples/email_update_view', $this->data);
+        } else {
+            redirect('auth/login');
+        }
+    }
+
+    ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
+    // Left Menu Process
+    ###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###
+    
+    /*
+     * Example of no sub menu
+     * 
+     */
+    function noSubMenu() {
+
+        // Get any status message that may have been set.
+        $this->data['message'] = (!isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];
+
+        // Set the page title
+        $this->layouts->set_title('No Sub Menu');
+        
+        // Include any css that needed. This is chained method, so just add all file like below
+        $this->layouts->add_css('assets/css/bootstrap.css')
+                      ->add_css('assets/css/plugins/metisMenu/metisMenu.min.css')
+                      ->add_css('assets/css/sb-admin-2.css')
+                      ->add_css('assets/font-awesome/css/font-awesome.min.css');
+        
+        // Include any js that needed
+        $this->layouts->add_js('assets/js/jquery.js')
+                      ->add_js('assets/js/bootstrap.min.js')
+                      ->add_js('assets/js/plugins/metisMenu/metisMenu.min.js')
+                      ->add_js('assets/js/sb-admin-2.js');
+        
+        $this->layouts->viewMember('member/no_sub_menu_view', $this->data);
+    }
+    
+    /*
+     * Example of sub menu
+     * 
+     */
+    function SubMenuA() {
+
+        // Get any status message that may have been set.
+        $this->data['message'] = (!isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];
+
+        // Set the page title
+        $this->layouts->set_title('Sub Menu A');
+        
+        // Include any css that needed. This is chained method, so just add all file like below
+        $this->layouts->add_css('assets/css/bootstrap.css')
+                      ->add_css('assets/css/plugins/metisMenu/metisMenu.min.css')
+                      ->add_css('assets/css/sb-admin-2.css')
+                      ->add_css('assets/font-awesome/css/font-awesome.min.css');
+        
+        // Include any js that needed
+        $this->layouts->add_js('assets/js/jquery.js')
+                      ->add_js('assets/js/bootstrap.min.js')
+                      ->add_js('assets/js/plugins/metisMenu/metisMenu.min.js')
+                      ->add_js('assets/js/sb-admin-2.js');
+        
+        $this->layouts->viewMember('member/sub_menu_a_view', $this->data);
+    }
+    
+    function SubMenuB() {
+
+        // Get any status message that may have been set.
+        $this->data['message'] = (!isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];
+
+        // Set the page title
+        $this->layouts->set_title('Sub Menu B');
+        
+        // Include any css that needed. This is chained method, so just add all file like below
+        $this->layouts->add_css('assets/css/bootstrap.css')
+                      ->add_css('assets/css/plugins/metisMenu/metisMenu.min.css')
+                      ->add_css('assets/css/sb-admin-2.css')
+                      ->add_css('assets/font-awesome/css/font-awesome.min.css');
+        
+        // Include any js that needed
+        $this->layouts->add_js('assets/js/jquery.js')
+                      ->add_js('assets/js/bootstrap.min.js')
+                      ->add_js('assets/js/plugins/metisMenu/metisMenu.min.js')
+                      ->add_js('assets/js/sb-admin-2.js');
+        
+        $this->layouts->viewMember('member/sub_menu_b_view', $this->data);
+    }
+
+}
+
+/* End of file auth_public.php */
+/* Location: ./application/controllers/auth_public.php */	
