@@ -21,6 +21,7 @@ Update the 'cookie_prefix' config setting to a value of your choice. This is to 
 ```sh
 $config['cookie_prefix'] = "your_prefix_";
 ```
+
 ##### /application/config/database.php<br><br>
 Update the database setting
 ```sh
