@@ -14,10 +14,10 @@
                     <?php echo form_open(current_url()); ?>
                     <fieldset>
                         <div class="form-group">
-                            <input type="text" id="identity" name="login_identity" value="<?php echo set_value('login_identity','magister'); ?>" class="form-control" autofocus placeholder="Username"/>
+                            <input type="text" id="identity" name="login_identity" value="<?php echo set_value('login_identity'); ?>" class="form-control" autofocus placeholder="Username"/>
                         </div>
                         <div class="form-group">
-                            <input type="password" id="password" name="login_password" value="<?php echo set_value('login_password', 'OPDIocdaf3204'); ?>" class="form-control" placeholder="Password"/>
+                            <input type="password" id="password" name="login_password" value="<?php echo set_value('login_password'); ?>" class="form-control" placeholder="Password"/>
                         </div>
                         <div class="checkbox">
                             <label>
